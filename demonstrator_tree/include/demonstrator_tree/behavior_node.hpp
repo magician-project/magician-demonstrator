@@ -9,7 +9,6 @@
 #include "demonstrator_tree/parameters_parser.hpp"
 
 
-
 namespace DemostratorTree{
 
 
@@ -29,7 +28,7 @@ namespace DemostratorTree{
                 return BT::NodeStatus::SUCCESS;
             }
             else{
-                RCLCPP_ERROR(get_logger(),"FAILURE" );
+                RCLCPP_WARN(get_logger(),"FALLBACK IS CONTINUES");
                 return BT::NodeStatus::FAILURE;
             }
 

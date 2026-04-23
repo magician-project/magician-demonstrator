@@ -16,8 +16,8 @@ find_package(behaviortree_cpp REQUIRED)
 
 include_directories(include)
 add_executable(demo src/main.cpp 
-                    src/behavior_node.cpp
-                    src/parameters_parser.cpp
+                    src/demonstrator_tree/behavior_node.cpp
+                    src/demonstrator_tree/parameters_parser.cpp
               )
 
 

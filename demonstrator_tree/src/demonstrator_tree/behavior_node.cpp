@@ -1,4 +1,6 @@
 #include "demonstrator_tree/behavior_node.hpp"
+#include <behaviortree_cpp/basic_types.h>
+#include <rclcpp/logging.hpp>
 
 using namespace DemostratorTree;
 
@@ -84,7 +86,7 @@ BT::NodeStatus MagicianClientNode::homingCall(){
     auto cleaning_request = std::make_shared<std_srvs::srv::SetBool::Request>();
     cleaning_request->data = true;
 
-    const auto timeout = std::chrono::seconds(5);
+    const auto timeout = std::chrono::seconds(8);
 
     //Only sensing needs homing
     if(!sensing_at_home && cleaning_at_home){
@@ -172,15 +174,41 @@ BT::NodeStatus MagicianOpcUA::OpcServiceCall(){
     
 auto sensing_safe_transfer_request = std::make_shared<std_srvs::srv::SetBool::Request>();
 auto cleaning_safe_transfer_request = std::make_shared<std_srvs::srv::SetBool::Request>();
+const auto timeout = std::chrono::seconds(8);
 
 sensing_safe_transfer_request->data = true;
 cleaning_safe_transfer_request->data = true;
 
-sensing_safe_transfer_client_->async_send_request(sensing_safe_transfer_request);
-cleaning_safe_transfer_client_->async_send_request(cleaning_safe_transfer_request);
+auto sensing_future = sensing_safe_transfer_client_->async_send_request(sensing_safe_transfer_request);
+auto cleaning_future = cleaning_safe_transfer_client_->async_send_request(cleaning_safe_transfer_request);
 
-RCLCPP_INFO(get_logger(), "Safe Transfer Home enabled.");
-return BT::NodeStatus::SUCCESS;
+    bool sensing_ready = sensing_future.wait_for(timeout) == std::future_status::ready;
+    bool cleaning_ready= cleaning_future.wait_for(timeout) == std::future_status::ready;
+    
+    if(!sensing_ready || !cleaning_ready){
+        RCLCPP_ERROR(get_logger(), "OPCUA TIMEOUT - sensing Home Status: %s, Cleaning Home Status : %s",
+                                sensing_ready  ? "OK" : "TIMEOUT",
+                                cleaning_ready ? "OK" : "TIMEOUT");
+        return BT::NodeStatus::FAILURE;
+    }
+auto sensing_response = sensing_future.get();
+auto cleaning_response =cleaning_future.get();
+
+if(sensing_response->success && cleaning_response->success){
+
+ RCLCPP_INFO(get_logger(), "Safe Transfer Home enabled.");
+ return BT::NodeStatus::SUCCESS;
+
+}else{
+    
+    RCLCPP_ERROR(get_logger(),"service calling is failed");
+    return BT::NodeStatus::FAILURE;
+
+}
+
+
+
+
 
 }
 
