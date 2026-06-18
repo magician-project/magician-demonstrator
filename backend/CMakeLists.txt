@@ -22,6 +22,7 @@ find_package(yaml-cpp REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/SetInt16.srv"
   "srv/SetFloat32.srv"
+  "srv/GetSpotWeights.srv"
   DEPENDENCIES std_msgs
 )
 

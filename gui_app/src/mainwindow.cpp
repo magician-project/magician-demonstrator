@@ -3,210 +3,202 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QGridLayout>
 #include <QGroupBox>
 #include <QLabel>
 #include <QStatusBar>
 #include <QScrollArea>
 #include <QPixmap>
 #include <QFrame>
+#include <qpushbutton.h>
+#include <std_msgs/msg/detail/bool__struct.hpp>
+#include <std_srvs/srv/detail/set_bool__struct.hpp>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
+  // ── Global stylesheet ──────────────────────────────────────────────
+  setStyleSheet(
+    "QMainWindow { background-color: #1e2124; }"
+    "QScrollArea { border: none; background-color: #1e2124; }"
+    "QWidget { background-color: #1e2124; color: #c8cdd6; }"
+    "QGroupBox {"
+    "  font-size: 11px; font-weight: bold; letter-spacing: 1.5px;"
+    "  color: #7a8494; border: 1px solid #32363e;"
+    "  margin-top: 18px; padding: 12px 8px 8px 8px;"
+    "  background-color: #23272b; border-radius: 2px; }"
+    "QGroupBox::title {"
+    "  subcontrol-origin: margin; left: 10px; top: 2px; padding: 0 4px; }"
+    "QLabel { color: #8a909c; font-size: 12px; background: transparent; }"
+    "QLineEdit {"
+    "  background-color: #191b1f; border: 1px solid #32363e;"
+    "  color: #c8cdd6; padding: 6px 10px; font-size: 12px; border-radius: 2px; }"
+    "QLineEdit:focus { border-color: #5088b8; color: #dde2ea; }"
+    "QStatusBar {"
+    "  background-color: #191b1f; color: #7a8494; font-size: 11px;"
+    "  border-top: 1px solid #32363e; }"
+  );
+
   auto *scrollArea = new QScrollArea(this);
   auto *central = new QWidget();
   auto *mainLayout = new QVBoxLayout(central);
-  mainLayout->setSpacing(10);
-  mainLayout->setContentsMargins(15, 15, 15, 15);
-  
-  auto *headerFrame = new QFrame(central);
-  headerFrame->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
-  headerFrame->setStyleSheet("QFrame { background-color: #2c3e50; border-radius: 10px; padding: 10px; }");
-  auto *headerLayout = new QVBoxLayout(headerFrame);
-  
-  auto *logoLabel = new QLabel(headerFrame);
-  QPixmap logo("/home/furkan/magician_ws/src/gui_app/png/magician_logo_full.png"); // -->  CHANGE IT !!
+  mainLayout->setSpacing(0);
+  mainLayout->setContentsMargins(0, 0, 0, 0);
+
+  // ── Header bar ────────────────────────────────────────────────────
+  auto *headerWidget = new QWidget(central);
+  headerWidget->setFixedHeight(64);
+  headerWidget->setStyleSheet(
+    "QWidget { background-color: #191b1f; border-bottom: 1px solid #32363e; }"
+    "QLabel { background: transparent; }"
+  );
+  auto *headerLayout = new QHBoxLayout(headerWidget);
+  headerLayout->setContentsMargins(18, 0, 18, 0);
+  headerLayout->setSpacing(14);
+
+  QPixmap logo("/home/furkan/magician_ws/src/gui_app/png/images.png");
   if (!logo.isNull()) {
-    logoLabel->setPixmap(logo.scaledToHeight(150, Qt::SmoothTransformation));
-    logoLabel->setAlignment(Qt::AlignCenter);
+    auto *logoLabel = new QLabel(headerWidget);
+    logoLabel->setPixmap(logo.scaledToHeight(50, Qt::SmoothTransformation));
     headerLayout->addWidget(logoLabel);
-  } else {
-    auto *placeholderLabel = new QLabel("MAGICIAN", headerFrame);
-    placeholderLabel->setAlignment(Qt::AlignCenter);
-    placeholderLabel->setStyleSheet("QLabel { color: white; font-size: 48px; font-weight: bold; }");
-    headerLayout->addWidget(placeholderLabel);
   }
-  
-  auto *titleLabel = new QLabel("PLC Control System", headerFrame);
-  titleLabel->setAlignment(Qt::AlignCenter);
-  titleLabel->setStyleSheet("QLabel { color: white; font-size: 24px; font-weight: bold; margin: 10px; }");
+
+  auto *titleLabel = new QLabel("PLC CONTROL SYSTEM", headerWidget);
+  titleLabel->setStyleSheet(
+    "QLabel { color: #d0d6e0; font-size: 14px; font-weight: bold; letter-spacing: 2px; }");
   headerLayout->addWidget(titleLabel);
-  
-  auto *subtitleLabel = new QLabel("ROS2 OPC-UA Bridge Interface", headerFrame);
-  subtitleLabel->setAlignment(Qt::AlignCenter);
-  subtitleLabel->setStyleSheet("QLabel { color: #ecf0f1; font-size: 14px; margin-bottom: 10px; }");
+  headerLayout->addStretch();
+
+  auto *subtitleLabel = new QLabel("ROS2  ·  OPC-UA BRIDGE", headerWidget);
+  subtitleLabel->setStyleSheet(
+    "QLabel { color: #5a6270; font-size: 11px; letter-spacing: 1.5px; }");
   headerLayout->addWidget(subtitleLabel);
-  
-  mainLayout->addWidget(headerFrame);
-  
-  // Speed Control Group
-  auto *speedGroup = new QGroupBox("⚡ Speed Control", central);
-  speedGroup->setStyleSheet(
-    "QGroupBox { font-weight: bold; font-size: 14px; border: 2px solid #3498db; "
-    "border-radius: 8px; margin-top: 10px; padding-top: 15px; background-color: #ecf0f1; }"
-    "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }"
-  );
+  mainLayout->addWidget(headerWidget);
+
+  // ── Main content: two-column layout ──────────────────────────────
+  auto *contentWidget = new QWidget(central);
+  auto *contentLayout = new QHBoxLayout(contentWidget);
+  contentLayout->setSpacing(8);
+  contentLayout->setContentsMargins(10, 8, 10, 8);
+
+  // ── Left panel ────────────────────────────────────────────────────
+  auto *leftPanel = new QWidget(contentWidget);
+  leftPanel->setStyleSheet("QWidget { background-color: #161719; }");
+  auto *leftLayout = new QVBoxLayout(leftPanel);
+  leftLayout->setSpacing(8);
+  leftLayout->setContentsMargins(0, 0, 0, 0);
+
+  // Speed
+  auto *speedGroup = new QGroupBox("SPEED CONTROL", leftPanel);
   auto *speedLayout = new QHBoxLayout(speedGroup);
+  speedLayout->setSpacing(5);
   auto *speedEdit = new QLineEdit(speedGroup);
-  speedEdit->setStyleSheet("QLineEdit { padding: 8px; border: 2px solid #bdc3c7; border-radius: 5px; font-size: 12px; }");
-  auto *btnSpeedSet = new QPushButton("Set Speed", speedGroup);
-  btnSpeedSet->setStyleSheet(
-    "QPushButton { background-color: #3498db; color: white; padding: 8px 15px; "
-    "border-radius: 5px; font-weight: bold; }"
-    "QPushButton:hover { background-color: #2980b9; }"
-    "QPushButton:pressed { background-color: #1c638e; }"
-  );
-  speedEdit->setPlaceholderText("Enter speed value");
-  speedLayout->addWidget(new QLabel("Speed:", speedGroup));
-  speedLayout->addWidget(speedEdit);
+  speedEdit->setPlaceholderText("value");
+  const QString actionBtn =
+    "QPushButton { background-color: #243348; color: #6a9ec0; border: 1px solid #2e4460;"
+    "  padding: 6px 18px; font-size: 12px; font-weight: bold; letter-spacing: 1px; border-radius: 2px; }"
+    "QPushButton:hover { background-color: #2a3d58; border-color: #5088b8; color: #90bede; }"
+    "QPushButton:pressed { background-color: #1c2a3e; }"; 
+  auto *btnSpeedSet = new QPushButton("SET", speedGroup);
+  btnSpeedSet->setStyleSheet(actionBtn);
+  speedLayout->addWidget(new QLabel("SPEED", speedGroup));
+  speedLayout->addWidget(speedEdit, 1);
   speedLayout->addWidget(btnSpeedSet);
-  mainLayout->addWidget(speedGroup);
-  
+  leftLayout->addWidget(speedGroup);
 
+  // Linear Axis
+  auto *slidersGroup = new QGroupBox("LINEAR AXIS", leftPanel);
+  auto *slidersLayout = new QGridLayout(slidersGroup);
+  slidersLayout->setSpacing(5);
+  slidersLayout->setColumnStretch(1, 1);
+  auto *slider1Edit = new QLineEdit(slidersGroup);
+  slider1Edit->setPlaceholderText("target pos");
+  auto *btnslider1Set = new QPushButton("SET", slidersGroup);
+  auto *btnslider1Go  = new QPushButton("MOVE", slidersGroup);
+  auto *slider2Edit = new QLineEdit(slidersGroup);
+  slider2Edit->setPlaceholderText("target pos");
+  auto *btnslider2Set = new QPushButton("SET", slidersGroup);
+  auto *btnslider2Go  = new QPushButton("MOVE", slidersGroup);
+  btnslider1Set->setStyleSheet(actionBtn);
+  btnslider1Go->setStyleSheet(actionBtn);
+  btnslider2Set->setStyleSheet(actionBtn);
+  btnslider2Go->setStyleSheet(actionBtn);
+  slidersLayout->addWidget(new QLabel("AXIS 1", slidersGroup), 0, 0);
+  slidersLayout->addWidget(slider1Edit, 0, 1);
+  slidersLayout->addWidget(btnslider1Set, 0, 2);
+  slidersLayout->addWidget(btnslider1Go, 0, 3);
+  slidersLayout->addWidget(new QLabel("AXIS 2", slidersGroup), 1, 0);
+  slidersLayout->addWidget(slider2Edit, 1, 1);
+  slidersLayout->addWidget(btnslider2Set, 1, 2);
+  slidersLayout->addWidget(btnslider2Go, 1, 3);
+  leftLayout->addWidget(slidersGroup);
 
-
-  auto *slider1Group = new QGroupBox("slider1 Control", central);
-  slider1Group->setStyleSheet(
-    "QGroupBox { font-weight: bold; font-size: 14px; border: 2px solid #3498db; "
-    "border-radius: 8px; margin-top: 10px; padding-top: 15px; background-color: #ecf0f1; }"
-    "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }"
-  );
-  auto *slider1Layout = new QHBoxLayout(slider1Group);
-  auto *slider1Edit = new QLineEdit(slider1Group);
-  slider1Edit->setStyleSheet("QLineEdit { padding: 8px; border: 2px solid #bdc3c7; border-radius: 5px; font-size: 12px; }");
-  auto *btnslider1Set = new QPushButton("Set Position", slider1Group);
-  btnslider1Set->setStyleSheet(
-    "QPushButton { background-color: #3498db; color: white; padding: 8px 15px; "
-    "border-radius: 5px; font-weight: bold; }"
-    "QPushButton:hover { background-color: #2980b9; }"
-    "QPushButton:pressed { background-color: #1c638e; }"
-  );
-  auto *btnslider1Go = new QPushButton("Go Position", slider1Group);
-  btnslider1Go->setStyleSheet(
-    "QPushButton { background-color: #3498db; color: white; padding: 8px 15px; "
-    "border-radius: 5px; font-weight: bold; }"
-    "QPushButton:hover { background-color: #2980b9; }"
-    "QPushButton:pressed { background-color: #1c638e; }"
-  );
-  slider1Edit->setPlaceholderText("Enter target positon");
-  slider1Layout->addWidget(new QLabel("Slider1:", slider1Group));
-  slider1Layout->addWidget(slider1Edit);
-  slider1Layout->addWidget(btnslider1Set);
-  slider1Layout->addWidget(btnslider1Go);
-  mainLayout->addWidget(slider1Group);
-
-
-  auto *slider2Group = new QGroupBox("slider2 Control", central);
-  slider2Group->setStyleSheet(
-    "QGroupBox { font-weight: bold; font-size: 14px; border: 2px solid #3498db; "
-    "border-radius: 8px; margin-top: 10px; padding-top: 15px; background-color: #ecf0f1; }"
-    "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }"
-  );
-  auto *slider2Layout = new QHBoxLayout(slider2Group);
-  auto *slider2Edit = new QLineEdit(slider2Group);
-  slider2Edit->setStyleSheet("QLineEdit { padding: 8px; border: 2px solid #bdc3c7; border-radius: 5px; font-size: 12px; }");
-  auto *btnslider2Set = new QPushButton("Set Position", slider2Group);
-  btnslider2Set->setStyleSheet(
-    "QPushButton { background-color: #3498db; color: white; padding: 8px 15px; "
-    "border-radius: 5px; font-weight: bold; }"
-    "QPushButton:hover { background-color: #2980b9; }"
-    "QPushButton:pressed { background-color: #1c638e; }"
-  );
-  auto *btnslider2Go = new QPushButton("Go Position", slider2Group);
-  btnslider2Go->setStyleSheet(
-    "QPushButton { background-color: #3498db; color: white; padding: 8px 15px; "
-    "border-radius: 5px; font-weight: bold; }"
-    "QPushButton:hover { background-color: #2980b9; }"
-    "QPushButton:pressed { background-color: #1c638e; }"
-  );
-  slider2Edit->setPlaceholderText("Enter target position");
-  slider2Layout->addWidget(new QLabel("Slider2:", slider2Group));
-  slider2Layout->addWidget(slider2Edit);
-  slider2Layout->addWidget(btnslider2Set);
-  slider2Layout->addWidget(btnslider2Go);
-  mainLayout->addWidget(slider2Group);
-
-
-
-
-  auto *cobotGroup = new QGroupBox("🤖 COBOT Control", central);
-  cobotGroup->setStyleSheet(
-    "QGroupBox { font-weight: bold; font-size: 14px; border: 2px solid #9b59b6; "
-    "border-radius: 8px; margin-top: 10px; padding-top: 15px; background-color: #ecf0f1; }"
-    "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }"
-  );
+  // System Mode
+  auto *cobotGroup = new QGroupBox("SYSTEM MODE", leftPanel);
   auto *cobotLayout = new QVBoxLayout(cobotGroup);
-  btnCobotToggle_ = createToggleButton("COBOT CONNECTION");
-  cobotLayout->addWidget(btnCobotToggle_);
-  mainLayout->addWidget(cobotGroup);
-  
-  auto *sensingGroup = new QGroupBox("🔍 Sensing Robot Controls", central);
-  sensingGroup->setStyleSheet(
-    "QGroupBox { font-weight: bold; font-size: 14px; border: 2px solid #16a085; "
-    "border-radius: 8px; margin-top: 10px; padding-top: 15px; background-color: #ecf0f1; }"
-    "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }"
-  );
-  auto *sensingLayout = new QVBoxLayout(sensingGroup);
-  
-  btnSensingSafeTransferToggle_ = createToggleButton("Safe Transfer");
-  btnSensingFinishedToggle_ = createToggleButton("Sensing Finished");
-  btnSensingTouchFinishedToggle_ = createToggleButton("Touch Sensing Finished");
-  btnSensingActiveToggle_ = createToggleButton("Sensing Active");
-  btnSensingTouchActiveToggle_ = createToggleButton("Touch Sensing Active");
-  btnSensingSlideCommandToggle_ = createToggleButton("Slide Command");
-  btnSensingRunningToggle_ = createToggleButton("Running");
-  
-  sensingLayout->addWidget(btnSensingSafeTransferToggle_);
-  sensingLayout->addWidget(btnSensingFinishedToggle_);
-  sensingLayout->addWidget(btnSensingTouchFinishedToggle_);
-  sensingLayout->addWidget(btnSensingActiveToggle_);
-  sensingLayout->addWidget(btnSensingTouchActiveToggle_);
-  sensingLayout->addWidget(btnSensingSlideCommandToggle_);
-  sensingLayout->addWidget(btnSensingRunningToggle_);
-  mainLayout->addWidget(sensingGroup);
-  
-  auto *cleaningGroup = new QGroupBox("🧹 Cleaning Robot Controls", central);
-  cleaningGroup->setStyleSheet(
-    "QGroupBox { font-weight: bold; font-size: 14px; border: 2px solid #e67e22; "
-    "border-radius: 8px; margin-top: 10px; padding-top: 15px; background-color: #ecf0f1; }"
-    "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }"
-  );
-  auto *cleaningLayout = new QVBoxLayout(cleaningGroup);
-  
-  btnCleaningSafeTransferToggle_ = createToggleButton("Safe Transfer");
-  btnCleaningFinishedToggle_ = createToggleButton("Cleaning Finished");
-  btnCleaningActiveToggle_ = createToggleButton("Cleaning Active");
+  cobotLayout->setSpacing(4);
+  btnCobotModeToggle_    = createToggleButton("COBOT MODE");
+  btnAutomaticModeToggle_ = createToggleButton("FULL AUTOMATIC");
+  cobotLayout->addWidget(btnCobotModeToggle_);
+  cobotLayout->addWidget(btnAutomaticModeToggle_);
+  leftLayout->addWidget(cobotGroup);
+  leftLayout->addStretch();
+  contentLayout->addWidget(leftPanel, 4);
+
+  // ── Right panel ───────────────────────────────────────────────────
+  auto *rightPanel = new QWidget(contentWidget);
+  rightPanel->setStyleSheet("QWidget { background-color: #161719; }");
+  auto *rightLayout = new QVBoxLayout(rightPanel);
+  rightLayout->setSpacing(8);
+  rightLayout->setContentsMargins(0, 0, 0, 0);
+
+  // Sensing Robot
+  auto *sensingGroup = new QGroupBox("SENSING ROBOT", rightPanel);
+  auto *sensingLayout = new QGridLayout(sensingGroup);
+  sensingLayout->setSpacing(4);
+  btnSensingCarbodyLocatedSt_    = createToggleButton("Carbody Located");
+  btnSensingSafeTransferToggle_  = createToggleButton("Robot Home");
+  btnSensingFinishedToggle_      = createToggleButton("Sensing Finished");
+  btnSensingTouchFinishedToggle_ = createToggleButton("Touch Finished");
+  btnSensingActiveToggle_        = createToggleButton("Sensing Active");
+  btnSensingTouchActiveToggle_   = createToggleButton("Touch Active");
+  btnSensingSlideCommandToggle_  = createToggleButton("Slide Command");
+  btnSensingRunningToggle_       = createToggleButton("Running");
+  sensingLayout->addWidget(btnSensingSafeTransferToggle_,    0, 0);
+  sensingLayout->addWidget(btnSensingFinishedToggle_,        0, 1);
+  sensingLayout->addWidget(btnSensingTouchFinishedToggle_,   1, 0);
+  sensingLayout->addWidget(btnSensingActiveToggle_,          1, 1);
+  sensingLayout->addWidget(btnSensingTouchActiveToggle_,     2, 0);
+  sensingLayout->addWidget(btnSensingSlideCommandToggle_,    2, 1);
+  sensingLayout->addWidget(btnSensingRunningToggle_,         3, 0);
+  sensingLayout->addWidget(btnSensingCarbodyLocatedSt_,      3, 1);
+  rightLayout->addWidget(sensingGroup);
+
+  // Cleaning Robot
+  auto *cleaningGroup = new QGroupBox("CLEANING ROBOT", rightPanel);
+  auto *cleaningLayout = new QGridLayout(cleaningGroup);
+  cleaningLayout->setSpacing(4);
+  btnCleaningCarbodyLocatedSt_   = createToggleButton("Carbody Located");
+  btnCleaningSafeTransferToggle_ = createToggleButton("Robot Home");
+  btnCleaningFinishedToggle_     = createToggleButton("Cleaning Finished");
+  btnCleaningActiveToggle_       = createToggleButton("Cleaning Active");
   btnCleaningSlideCommandToggle_ = createToggleButton("Slide Command");
-  btnCleaningRunningToggle_ = createToggleButton("Running");
-  
-  cleaningLayout->addWidget(btnCleaningSafeTransferToggle_);
-  cleaningLayout->addWidget(btnCleaningFinishedToggle_);
-  cleaningLayout->addWidget(btnCleaningActiveToggle_);
-  cleaningLayout->addWidget(btnCleaningSlideCommandToggle_);
-  cleaningLayout->addWidget(btnCleaningRunningToggle_);
-  mainLayout->addWidget(cleaningGroup);
-  
-  auto *footerLabel = new QLabel("© 2025 Magician - Industrial Automation Solutions", central);
-  footerLabel->setAlignment(Qt::AlignCenter);
-  footerLabel->setStyleSheet("QLabel { color: #7f8c8d; font-size: 10px; margin-top: 10px; }");
-  mainLayout->addWidget(footerLabel);
-  
+  btnCleaningRunningToggle_      = createToggleButton("Running");
+  cleaningLayout->addWidget(btnCleaningSafeTransferToggle_,  0, 0);
+  cleaningLayout->addWidget(btnCleaningFinishedToggle_,      0, 1);
+  cleaningLayout->addWidget(btnCleaningActiveToggle_,        1, 0);
+  cleaningLayout->addWidget(btnCleaningSlideCommandToggle_,  1, 1);
+  cleaningLayout->addWidget(btnCleaningRunningToggle_,       2, 0);
+  cleaningLayout->addWidget(btnCleaningCarbodyLocatedSt_,    2, 1);
+  rightLayout->addWidget(cleaningGroup);
+  rightLayout->addStretch();
+  contentLayout->addWidget(rightPanel, 6);
+
+  mainLayout->addWidget(contentWidget, 1);
+
   scrollArea->setWidget(central);
   scrollArea->setWidgetResizable(true);
-  scrollArea->setStyleSheet("QScrollArea { border: none; background-color: #bdc3c7; }");
   setCentralWidget(scrollArea);
-  setWindowTitle("Magician PLC Control System");
-  resize(600, 900);
-  
-  setStyleSheet("QMainWindow { background-color: #bdc3c7; }");
+  setWindowTitle("Magician — PLC Control");
+  resize(1080, 680);
 
   setup_ros();
 
@@ -232,11 +224,21 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   connect(btnslider2Go, &QPushButton::clicked, [this](bool checked){ 
     call_service(cli_slider2_go_pos_, checked);
   });
-  connect(btnCobotToggle_, &QPushButton::toggled, [this](bool checked){ 
-    updateToggleButtonStyle(btnCobotToggle_, checked);
-    call_service(cli_cobot_, checked);
+  connect(btnCobotModeToggle_, &QPushButton::toggled, [this](bool checked){ 
+    updateToggleButtonStyle(btnCobotModeToggle_, checked);
+    call_service(cli_mod_cobot_, checked);
   });
-  
+ 
+  connect(btnAutomaticModeToggle_, &QPushButton::toggled, [this](bool checked){
+    updateToggleButtonStyle(btnAutomaticModeToggle_,checked);
+    call_service(cli_mod_automatic_, checked);
+  });
+
+  connect(btnSensingCarbodyLocatedSt_,&QPushButton::toggled,[this](bool checked){
+    updateToggleButtonStyle(btnSensingCarbodyLocatedSt_, checked);
+    call_service(cli_sensing_carbody_located_st_,checked);        
+  });
+
   connect(btnSensingSafeTransferToggle_, &QPushButton::toggled, [this](bool checked){ 
     updateToggleButtonStyle(btnSensingSafeTransferToggle_, checked);
     call_service(cli_sensing_safetransfer_, checked);
@@ -271,7 +273,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     updateToggleButtonStyle(btnSensingRunningToggle_, checked);
     call_service(cli_sensing_running_, checked);
   });
-  
+ 
+
+
+  connect(btnCleaningCarbodyLocatedSt_, &QPushButton::toggled, [this](bool checked){
+    updateToggleButtonStyle(btnCleaningCarbodyLocatedSt_, checked);
+    call_service(cli_cleaning_carbody_located_st_, checked);
+  });
   connect(btnCleaningSafeTransferToggle_, &QPushButton::toggled, [this](bool checked){ 
     updateToggleButtonStyle(btnCleaningSafeTransferToggle_, checked);
     call_service(cli_cleaning_safetransfer_, checked);
@@ -301,10 +309,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 MainWindow::~MainWindow() {}
 
 QPushButton* MainWindow::createToggleButton(const QString& label) {
-  auto *btn = new QPushButton(label + ": OFF", this);
+  auto *btn = new QPushButton(label + ":  OFF", this);
   btn->setCheckable(true);
   btn->setChecked(false);
-  btn->setMinimumHeight(45);
+  btn->setMinimumHeight(34);
   updateToggleButtonStyle(btn, false);
   return btn;
 }
@@ -312,18 +320,20 @@ QPushButton* MainWindow::createToggleButton(const QString& label) {
 void MainWindow::updateToggleButtonStyle(QPushButton* btn, bool state) {
   QString baseLabel = btn->text().left(btn->text().lastIndexOf(":"));
   if (state) {
-    btn->setText(baseLabel + ": ON");
+    btn->setText(baseLabel + ":  ON");
     btn->setStyleSheet(
-      "QPushButton { background-color: #27ae60; color: white; font-weight: bold; "
-      "border-radius: 8px; font-size: 13px; padding: 10px; border: 2px solid #229954; }"
-      "QPushButton:hover { background-color: #229954; }"
+      "QPushButton { background-color: #1a3028; color: #5ed68e; font-weight: bold;"
+      "  border: 1px solid #2a4e3a; border-left: 3px solid #3ec06a;"
+      "  font-size: 12px; padding: 7px 12px; border-radius: 2px; text-align: left; }"
+      "QPushButton:hover { background-color: #1e3a30; color: #78e8a4; }"
     );
   } else {
-    btn->setText(baseLabel + ": OFF");
+    btn->setText(baseLabel + ":  OFF");
     btn->setStyleSheet(
-      "QPushButton { background-color: #e74c3c; color: white; font-weight: bold; "
-      "border-radius: 8px; font-size: 13px; padding: 10px; border: 2px solid #c0392b; }"
-      "QPushButton:hover { background-color: #c0392b; }"
+      "QPushButton { background-color: #23272b; color: #7a8494; font-weight: bold;"
+      "  border: 1px solid #32363e; border-left: 3px solid #3e4450;"
+      "  font-size: 12px; padding: 7px 12px; border-radius: 2px; text-align: left; }"
+      "QPushButton:hover { background-color: #292e34; color: #9aa2b0; }"
     );
   }
 }
@@ -333,8 +343,10 @@ void MainWindow::setup_ros() {
   executor_->add_node(node_);
   
   cli_speed_ = node_->create_client<backend::srv::SetInt16>("/ros2_comm/speed_set");
-  cli_cobot_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/mod/cobot_set");
-  
+  cli_mod_cobot_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/mod/cobot_mode_set");
+  cli_mod_automatic_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/mod/full_automatic_mode_set");
+
+  cli_sensing_carbody_located_st_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/carbody_located_set");
   cli_sensing_safetransfer_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/safetransfer_set");
   cli_sensing_finished_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/finished_set");
   cli_sensing_touch_finished_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/touch_finished_set");
@@ -342,7 +354,9 @@ void MainWindow::setup_ros() {
   cli_sensing_touch_active_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/touch_active_set");
   cli_sensing_slide_command_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/slide_command_set");
   cli_sensing_running_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/running");
-  
+ 
+
+  cli_cleaning_carbody_located_st_= node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/carbody_located_set");
   cli_cleaning_safetransfer_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/safetransfer_set");
   cli_cleaning_finished_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/cleaning_finished_set");
   cli_cleaning_active_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/cleaning_active_set");
@@ -365,17 +379,37 @@ void MainWindow::setup_ros() {
       }, Qt::QueuedConnection);
     });
   
-  sub_cobot_ = node_->create_subscription<std_msgs::msg::Bool>(
+  sub_cobot_mode_ = node_->create_subscription<std_msgs::msg::Bool>(
     "/ros2_comm/mod/cobot", 10,
     [this](const std_msgs::msg::Bool::SharedPtr msg){
       QMetaObject::invokeMethod(this, [this, state=msg->data](){
-        btnCobotToggle_->blockSignals(true);
-        btnCobotToggle_->setChecked(state);
-        updateToggleButtonStyle(btnCobotToggle_, state);
-        btnCobotToggle_->blockSignals(false);
+        btnCobotModeToggle_->blockSignals(true);
+        btnCobotModeToggle_->setChecked(state);
+        updateToggleButtonStyle(btnCobotModeToggle_, state);
+        btnCobotModeToggle_->blockSignals(false);
       }, Qt::QueuedConnection);
     });
-  
+  sub_automatic_mode_ = node_->create_subscription<std_msgs::msg::Bool>("/ros2_comm/mod/automatic",10,
+    [this](const std_msgs::msg::Bool::SharedPtr msg){
+      QMetaObject::invokeMethod(this,[this,state=msg->data](){
+        btnAutomaticModeToggle_->blockSignals(true);
+        btnAutomaticModeToggle_->setChecked(state);
+        updateToggleButtonStyle(btnAutomaticModeToggle_,state);
+        btnAutomaticModeToggle_->blockSignals(false);
+      }, Qt::QueuedConnection);
+    });
+ 
+    
+  sub_sensing_carbody_located_st_ = node_->create_subscription<std_msgs::msg::Bool>("/ros2_comm/sensing/carbody_located_status",10,
+          [this](const std_msgs::msg::Bool::SharedPtr msg){
+          QMetaObject::invokeMethod(this,[this,state=msg->data](){
+           btnSensingCarbodyLocatedSt_->blockSignals(true);
+           btnSensingCarbodyLocatedSt_->setChecked(state);
+           updateToggleButtonStyle(btnSensingCarbodyLocatedSt_,state);
+           btnSensingCarbodyLocatedSt_->blockSignals(false);
+           },Qt::QueuedConnection);
+          });
+
   sub_sensing_safetransfer_ = node_->create_subscription<std_msgs::msg::Bool>(
     "/ros2_comm/sensing/home_st", 10,
     [this](const std_msgs::msg::Bool::SharedPtr msg){
@@ -452,7 +486,20 @@ void MainWindow::setup_ros() {
         btnSensingRunningToggle_->blockSignals(false);
       }, Qt::QueuedConnection);
     });
-  
+
+
+
+    
+  sub_sensing_carbody_located_st_ = node_->create_subscription<std_msgs::msg::Bool>("/ros2_comm/cleaning/carbody_located_status",10,
+          [this](const std_msgs::msg::Bool::SharedPtr msg){
+          QMetaObject::invokeMethod(this,[this,state=msg->data](){
+           btnCleaningCarbodyLocatedSt_->blockSignals(true);
+           btnCleaningCarbodyLocatedSt_->setChecked(state);
+           updateToggleButtonStyle(btnCleaningCarbodyLocatedSt_,state);
+           btnCleaningCarbodyLocatedSt_->blockSignals(false);
+           },Qt::QueuedConnection);
+          });
+
   sub_cleaning_safetransfer_ = node_->create_subscription<std_msgs::msg::Bool>(
     "/ros2_comm/cleaning/home_st", 10,
     [this](const std_msgs::msg::Bool::SharedPtr msg){

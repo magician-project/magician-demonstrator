@@ -271,7 +271,7 @@ static UA_StatusCode addROS2CommNodes(UA_Server *server, UA_UInt16 ns) {
 
     const char* modFields[] = {
         "STARTUP", "CALIBRATION", "LEARNING", "MAINTENANCE",
-        "EMERGENCY", "COBOT", "FULLY_AUTOMATIC", "SHUTDOWN_MODE"
+        "EMERGENCY", "COBOT", "FULLY AUTOMATIC", "SHUTDOWN_MODE"
     };
     for(size_t i = 0; i < 8; i++) {
         std::string nid = MOD + ".\"" + modFields[i] + "\"";
@@ -307,7 +307,8 @@ static UA_StatusCode addROS2CommNodes(UA_Server *server, UA_UInt16 ns) {
 
     const char* sensingFields[] = {
         "robothome_safetransfer", "sensing-finised", "touchsensing-finished",
-        "sensing-active", "touchsensing-active", "slide command", "running"
+        "sensing-active", "touchsensing-active", "slide command", "running",
+        "Car_Poss_Ok"
     };
     for(auto &f : sensingFields) {
         std::string nid = SENS + ".\"" + f + "\"";
@@ -320,7 +321,8 @@ static UA_StatusCode addROS2CommNodes(UA_Server *server, UA_UInt16 ns) {
 
     const char* cleaningFields[] = {
         "robothome_safetransfer", "cleaning-finished",
-        "cleaning-active", "slide command", "running"
+        "cleaning-active", "slide command", "running",
+        "Car_Pos_Ok"
     };
     for(auto &f : cleaningFields) {
         std::string nid = CLEAN + ".\"" + f + "\"";
@@ -369,8 +371,8 @@ int main(void) {
     std::cout << "   Double: GO_TO_POS_1, GO_TO_POS_2" << std::endl;
     std::cout << "   MOD   : 8 bool fields + Workcell_Status" << std::endl;
     std::cout << "   STAT  : 6 bool fields" << std::endl;
-    std::cout << "   Sensing : 7 bool fields" << std::endl;
-    std::cout << "   Cleaning: 5 bool fields" << std::endl;
+    std::cout << "   Sensing : 8 bool fields (+ Car_Poss_Ok)" << std::endl;
+    std::cout << "   Cleaning: 6 bool fields (+ Car_Pos_Ok)" << std::endl;
     std::cout << "========================================" << std::endl;
     std::cout << " Press Ctrl+C to stop" << std::endl;
     std::cout << "========================================\n" << std::endl;

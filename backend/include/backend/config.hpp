@@ -26,6 +26,9 @@ struct NodesCfg {
 struct StructsCfg{
     std::string mod_root, stat_root, sensing_root, cleaning_root, workcell_status;
     bool discover;
+    std::vector<std::string> spatter1_vec;
+    std::vector<std::string> spatter2_vec;
+
     std::vector<std::string> mod_fields;
     std::vector<std::string> stat_fields;
 };
@@ -43,7 +46,6 @@ class ConfigLoader{
 
     public:
     static UaConfig load_file(const std::string& yaml_path);
-
 
 };
 
