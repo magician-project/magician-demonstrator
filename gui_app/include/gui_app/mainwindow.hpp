@@ -2,6 +2,7 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QTimer>
+#include <qpushbutton.h>
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/int16.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -24,8 +25,9 @@ private:
   QTimer*                                                 ros_timer_;
   
   rclcpp::Client<backend::srv::SetInt16>::SharedPtr       cli_speed_;
-  BoolClient       cli_cobot_;
-  
+  BoolClient       cli_mod_cobot_;
+  BoolClient       cli_mod_automatic_;
+
   // Sensing robot clients
   BoolClient       cli_sensing_safetransfer_;
   BoolClient       cli_sensing_finished_;
@@ -34,13 +36,14 @@ private:
   BoolClient       cli_sensing_touch_active_;
   BoolClient       cli_sensing_slide_command_;
   BoolClient       cli_sensing_running_;
-  
+  BoolClient       cli_sensing_carbody_located_st_;  
   // Cleaning robot clients
   BoolClient       cli_cleaning_safetransfer_;
   BoolClient       cli_cleaning_finished_;
   BoolClient       cli_cleaning_active_;
   BoolClient       cli_cleaning_slide_command_;
   BoolClient       cli_cleaning_running_;
+  BoolClient       cli_cleaning_carbody_located_st_;
   
 
   rclcpp::Client<backend::srv::SetFloat32>::SharedPtr       cli_slider1_set_pos_;
@@ -50,7 +53,8 @@ private:
 
   // Subscriptions
   rclcpp::Subscription<std_msgs::msg::Int16>::SharedPtr   sub_speed_;
-  BoolSubscription   sub_cobot_;
+  BoolSubscription   sub_cobot_mode_;
+  BoolSubscription   sub_automatic_mode_;
   
   // Sensing subscriptions
   BoolSubscription   sub_sensing_safetransfer_;
@@ -60,16 +64,19 @@ private:
   BoolSubscription   sub_sensing_touch_active_;
   BoolSubscription   sub_sensing_slide_command_;
   BoolSubscription   sub_sensing_running_;
-  
+  BoolSubscription   sub_sensing_carbody_located_st_;
+
   // Cleaning subscriptions
   BoolSubscription   sub_cleaning_safetransfer_;
   BoolSubscription   sub_cleaning_finished_;
   BoolSubscription   sub_cleaning_active_;
   BoolSubscription   sub_cleaning_slide_command_;
   BoolSubscription   sub_cleaning_running_;
+  BoolSubscription   sub_cleaning_carbody_located_st_;
 
   // UI Elements - Toggle Buttons
-  QPushButton* btnCobotToggle_;
+  QPushButton* btnCobotModeToggle_; 
+  QPushButton* btnAutomaticModeToggle_;
   QPushButton* btnSensingSafeTransferToggle_;
   QPushButton* btnSensingFinishedToggle_;
   QPushButton* btnSensingTouchFinishedToggle_;
@@ -77,12 +84,14 @@ private:
   QPushButton* btnSensingTouchActiveToggle_;
   QPushButton* btnSensingSlideCommandToggle_;
   QPushButton* btnSensingRunningToggle_;
+  QPushButton* btnSensingCarbodyLocatedSt_;
   
   QPushButton* btnCleaningSafeTransferToggle_;
   QPushButton* btnCleaningFinishedToggle_;
   QPushButton* btnCleaningActiveToggle_;
   QPushButton* btnCleaningSlideCommandToggle_;
   QPushButton* btnCleaningRunningToggle_;
+  QPushButton* btnCleaningCarbodyLocatedSt_;
 
   void setup_ros();
   void call_speed_set(int value);

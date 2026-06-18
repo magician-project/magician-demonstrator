@@ -28,6 +28,17 @@ UaConfig ConfigLoader::load_file(const std::string& yaml_path){
 
     cfg.timing.write_timeout_ms = root["timing"]["write_timeout_ms"].as<int>();
     cfg.timing.sampling_ms      = root["timing"]["sampling_ms"].as<int>();
+    
+    if(root["structs"]["spot1_spatter_classes"]){
+       for(const auto& spot : root["structs"]["spot1_spatter_classes"]){
+            cfg.structs.spatter1_vec.push_back(spot.as<std::string>());
+       } 
+    }
+    if(root["struct"]["spot2_spatter_classes"]){
+        for(const auto& spot : root["structs"]["spot2_spatter_classes"]){
+            cfg.structs.spatter2_vec.push_back(spot.as<std::string>());
+        }
+    }
 
 
     for(YAML::const_iterator it = root["structs"]["mod_fields"].begin(); it!=root["structs"]["mod_fields"].end(); ++it){

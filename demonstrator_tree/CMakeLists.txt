@@ -14,12 +14,52 @@ find_package(std_srvs REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
 find_package(xbot_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
+find_package(srdfdom REQUIRED)
+find_package(moveit_ros_planning_interface REQUIRED)
+find_package(control_msgs REQUIRED)
 
 include_directories(include)
 add_executable(demo src/main.cpp 
                     src/demonstrator_tree/behavior_node.cpp
                     src/demonstrator_tree/parameters_parser.cpp
               )
+
+
+add_executable(cleaning_action src/doosan_sim_test/cleaning_action_server.cpp)
+
+
+add_executable(sensing_action src/doosan_sim_test/sensing_action_server.cpp)
+
+
+
+
+set(TARGET_DEPENDS
+  rclcpp
+  sensor_msgs
+  control_msgs
+  std_srvs
+  behaviortree_cpp
+  ament_index_cpp
+  moveit_ros_planning_interface
+)
+
+
+ament_target_dependencies(cleaning_action 
+${TARGET_DEPENDS}
+)
+
+install(TARGETS cleaning_action
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+
+ament_target_dependencies(sensing_action 
+${TARGET_DEPENDS}
+)
+
+install(TARGETS sensing_action
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 
 target_link_libraries(demo 
@@ -33,6 +73,7 @@ set(TARGET_DEPENDS
   xbot_msgs
   behaviortree_cpp
   ament_index_cpp
+  moveit_ros_planning_interface
 )
 
 
