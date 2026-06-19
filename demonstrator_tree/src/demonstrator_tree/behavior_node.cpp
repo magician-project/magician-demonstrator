@@ -99,6 +99,27 @@ void MagicianSubNode::homePosCallback(const xbot_msgs::msg::JointState::ConstSha
     {
         RCLCPP_INFO(get_logger(), "%s - Robot NOT home", robot_id.c_str());
     }
+
+    if (robot_id == cfg_.sensing_group.name) {
+        is_sensing_in_op_pos_ = true;
+        for(size_t i = 0; i < sensing_op_target_vec.size(); i++) {
+            if(std::fabs(sensing_op_target_vec[i] - msg->link_position[i]) > JOINT_TOL) {
+                is_sensing_in_op_pos_ = false;
+                break;
+            }
+        }
+    }
+    
+
+    else if (robot_id == cfg_.cleaning_group.name) {
+        is_cleaning_in_op_pos_ = true;
+        for(size_t i = 0; i < cleaning_op_target_vec.size(); i++) {
+            if(std::fabs(cleaning_op_target_vec[i] - msg->link_position[i]) > JOINT_TOL) {
+                is_cleaning_in_op_pos_ = false;
+                break;
+            }
+        }
+    }
     
 
 }
@@ -128,7 +149,7 @@ MagicianClientNode::MagicianClientNode(const std::string& node_name, const Cobot
 
     sensing_homing_client_ = create_client<std_srvs::srv::SetBool>(cfg_.sensing_group.service_name);
     cleaning_homing_client_= create_client<std_srvs::srv::SetBool>(cfg_.cleaning_group.service_name);
-    sensing_mock_operation_client_ = create_client<std_srvs::srv::SetBool>("/sr/xbotcore/homing_vision/switch");
+    sensing_mock_operation_client_ = create_client<std_srvs::srv::SetBool>("/sr/xbotcore/homing_ergodic/switch");
     cleaning_mock_operation_client_ = create_client<std_srvs::srv::SetBool>("/cr/xbotcore/homing2/switch");
 
     while(!sensing_homing_client_->wait_for_service(std::chrono::microseconds(4))){
@@ -223,6 +244,8 @@ BT::NodeStatus MagicianClientNode::SendHomingRequest(
 MagicianOpcUA::MagicianOpcUA(const std::string& node_name) : rclcpp::Node{node_name} 
 {
     automatic_mode_set_client_ = create_client<std_srvs::srv::SetBool>("/ros2_comm/mod/full_automatic_mode_set");
+    cobot_mode_set_client_ = create_client<std_srvs::srv::SetBool>("/ros2_comm/mod/cobot_mode_set");
+
 
     sensing_safe_transfer_client_ = create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/safetransfer_set");
     cleaning_safe_transfer_client_= create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/safetransfer_set");

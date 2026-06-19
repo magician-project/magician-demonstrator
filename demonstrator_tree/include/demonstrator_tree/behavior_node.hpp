@@ -94,6 +94,25 @@ namespace DemostratorTree{
         }
 
 
+    BT::NodeStatus CheckOperationPos(const std::string& robot_name) const {
+        if (robot_name == cfg_.sensing_group.name) {
+            if (is_sensing_in_op_pos_) {
+                RCLCPP_INFO(get_logger(), "SENSING ROBOT operation position reached.");
+                return BT::NodeStatus::SUCCESS;
+            }
+        } 
+        else if (robot_name == cfg_.cleaning_group.name) {
+            if (is_cleaning_in_op_pos_) {
+                RCLCPP_INFO(get_logger(), "CLEANING ROBOT operation position reached.");
+                return BT::NodeStatus::SUCCESS;
+            }
+        }
+        
+        RCLCPP_WARN(get_logger(), "WAITING FOR %s TO REACH OPERATION POSITION...", robot_name.c_str());
+        return BT::NodeStatus::FAILURE;
+    }
+
+
         bool sensingHomeInfo()const{
             return robot_home_status_.at(cfg_.sensing_group.name).first;
 
@@ -116,6 +135,8 @@ namespace DemostratorTree{
                 return false;
             }
         }
+
+        
 
         private:        
         
@@ -146,6 +167,29 @@ namespace DemostratorTree{
         rclcpp::CallbackGroup::SharedPtr group_home_pos_;
         rclcpp::CallbackGroup::SharedPtr group_sequence_opc_;
 
+    bool is_sensing_in_op_pos_ = false;
+    bool is_cleaning_in_op_pos_ = false;
+
+    // Sensing operasyon hedef konumu (Bir önceki adımda girdiğimiz)
+    const std::vector<double> sensing_op_target_vec = {
+        0.002013349672779441,
+       -0.5390744209289551,
+       -1.2323378324508667,
+        1.5754222869873047,
+        1.3890196084976196,
+       -0.0011984225129708648
+    };
+
+    // Yeni: Cleaning operasyon hedef konumu (Şimdi paylaştığın link_position değerleri)
+    const std::vector<double> cleaning_op_target_vec = {
+        1.4543336629867554,
+       -0.40163931250572205,
+        0.8603475093841553,
+        0.0024687503464519978,
+        1.1211961507797241,
+       -3.688288927078247
+    };
+
     };
 
     enum class TargetOpcUaClient{
@@ -154,7 +198,7 @@ namespace DemostratorTree{
     sensing_finished,
     cleaning_finished,
     automatic_mod,
-    cobot,
+    cobot_mod,
     cleaning_home,
     sensing_home,
     both_home,
@@ -185,7 +229,9 @@ namespace DemostratorTree{
             }
             else if constexpr (Target == TargetOpcUaClient::automatic_mod){
                 return callSetBoolServices(act_req, &MagicianOpcUA::automatic_mode_set_client_);
-            
+            }
+            else if constexpr (Target == TargetOpcUaClient::cobot_mod){
+                return callSetBoolServices(act_req, &MagicianOpcUA::cobot_mode_set_client_);
             }
             else if constexpr (Target == TargetOpcUaClient::both_home){
                 return callSetBoolServices(act_req, &MagicianOpcUA::cleaning_safe_transfer_client_,&MagicianOpcUA::sensing_safe_transfer_client_);
@@ -203,26 +249,41 @@ namespace DemostratorTree{
     
         template<typename... ClientPtr>
             BT::NodeStatus callSetBoolServices(bool act_req,ClientPtr... clients){
-                const auto timeout = std::chrono::seconds(8);
+                const auto timeout = std::chrono::seconds(10);
                 auto req = std::make_shared<std_srvs::srv::SetBool::Request>();
                 req->data = act_req;
 
                 std::vector<std::shared_future<std::shared_ptr<std_srvs::srv::SetBool::Response>>> futures{
-                    (this->*clients)->async_send_request(req)...
+                    (this->*clients)->async_send_request(req).share()...
                 };
 
+                bool all_ready = true;
                 for(auto& futr : futures){
-                    if(futr.wait_for(timeout) != std::future_status::ready || !futr.get()->success){
-
-                        return BT::NodeStatus::FAILURE;
-
+                    if(futr.wait_for(timeout) != std::future_status::ready){
+                        all_ready = false;
                     }
-                    return BT::NodeStatus::SUCCESS;
                 }
+
+                if(!all_ready){
+                    return BT::NodeStatus::FAILURE;
+                }
+
+                for (auto& futr : futures)
+                {
+                    if (!futr.get()->success)
+                    {
+                        return BT::NodeStatus::FAILURE;
+                    }
+                    
+                }
+
+                return BT::NodeStatus::SUCCESS;
 
             }
 
         rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr automatic_mode_set_client_;
+        rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr cobot_mode_set_client_;
+
 
         rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr sensing_safe_transfer_client_;
         rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr cleaning_safe_transfer_client_;
@@ -263,24 +324,38 @@ namespace DemostratorTree{
 
         private:    
             
+        
         template<typename... ClientPtr>
             BT::NodeStatus callSetBoolServices(bool act_req,ClientPtr... clients){
-                const auto timeout = std::chrono::seconds(8);
+                const auto timeout = std::chrono::seconds(5);
                 auto req = std::make_shared<std_srvs::srv::SetBool::Request>();
                 req->data = act_req;
 
                 std::vector<std::shared_future<std::shared_ptr<std_srvs::srv::SetBool::Response>>> futures{
-                    (this->*clients)->async_send_request(req)...
+                    (this->*clients)->async_send_request(req).share()...
                 };
 
+                bool all_ready = true;
                 for(auto& futr : futures){
-                    if(futr.wait_for(timeout) != std::future_status::ready || !futr.get()->success){
-
-                        return BT::NodeStatus::FAILURE;
-
+                    if(futr.wait_for(timeout) != std::future_status::ready){
+                        all_ready = false;
                     }
-                    return BT::NodeStatus::SUCCESS;
                 }
+
+                if(!all_ready){
+                    return BT::NodeStatus::FAILURE;
+                }
+
+                for (auto& futr : futures)
+                {
+                    if (!futr.get()->success)
+                    {
+                        return BT::NodeStatus::FAILURE;
+                    }
+                    
+                }
+                
+                return BT::NodeStatus::SUCCESS;
 
             }
 
