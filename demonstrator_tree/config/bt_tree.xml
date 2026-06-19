@@ -14,14 +14,15 @@
             <Sequence name = "HumanWithRobotSequence">
                 <IsHumanRobotMode name = "cobot_mode"/>
             </Sequence>
+           
             <Sequence name = "FullAutomaticModeSequence">
                 <IsFullAutomaticMode name = "automatic_mode"/>
                 <RetryUntilSuccessful num_attempts="-1">
                     <WaitingForCarLocatedCellSensing name ="car_located_sensing_cell"/>
                 </RetryUntilSuccessful>
                 <CallOpcUaActiveSensing name="call_opc_sensing_active"/> 
-                <!-- <CallCobotOperationSensing ame="call_sensing_operation_service"/> -->
-                <!-- <CallOpcUaDeactiveSensing name="call_opc_sensing_deactive"/> -->
+                <CallCobotOperationSensing name="call_sensing_operation_service"/>
+                <CallOpcUaDeactiveSensing name="call_opc_sensing_deactive"/>
                                 
                     <RetryUntilSuccessful num_attempts="-1">
                         <WaitingOpcUaSensingDeactive name="wait_sensing_deactive_command"/>
@@ -33,8 +34,8 @@
                     </RetryUntilSuccessful>    
                     <CallOpcUaActiveCleaning name="call_opc_cleaning_active"/>                        
     
-                <!-- <CallCobotOperationCleaning  name="call_cleaning_operation_service"/> -->
-                <!-- <CallOpcUaDeactiveCleaning name="call_opc_cleaning_deactive"/> -->
+                <CallCobotOperationCleaning  name="call_cleaning_operation_service"/>
+                <CallOpcUaDeactiveCleaning name="call_opc_cleaning_deactive"/>
  
                     <RetryUntilSuccessful num_attempts="-1">
                         <WaitingOpcUaCleaningDeactive name="wait_cleaning_deactive_command"/>
@@ -45,7 +46,7 @@
                     <CallOpcUaFinishedSensingDeactive name="call_sensing_and_touchsensing_finished_deactive"/> 
                      <CallOpcUaFinishedCleaningDeactive name="call_cleaning_finished_deactive"/> 
                     <CallOpcUaHomeBothDeactive   name="call_opcua_service_both_deactive"/>
-        </Sequence>
+            </Sequence>
         </Fallback>
         </RetryUntilSuccessful>
     </Sequence>
