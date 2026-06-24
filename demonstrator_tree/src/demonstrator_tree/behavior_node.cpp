@@ -1,13 +1,5 @@
 #include "demonstrator_tree/behavior_node.hpp"
-#include <behaviortree_cpp/basic_types.h>
-#include <chrono>
-#include <future>
 #include <memory>
-#include <rclcpp/callback_group.hpp>
-#include <rclcpp/logging.hpp>
-#include <rclcpp/subscription_base.hpp>
-#include <rclcpp/subscription_options.hpp>
-#include <std_msgs/msg/detail/bool__struct.hpp>
 #include <std_srvs/srv/detail/set_bool__struct.hpp>
 
 using namespace DemostratorTree;
@@ -35,17 +27,17 @@ MagicianSubNode::MagicianSubNode(const std::string& node_name, const CobotConfig
     rclcpp::SubscriptionOptions options_seq;
     options_seq.callback_group = group_sequence_opc_; 
 
-    sensing_home_axis_pos_ = create_subscription<sensor_msgs::msg::JointState>
-    (cfg_.sensing_group.joint_states,5,
-        [this,robot1](const sensor_msgs::msg::JointState::ConstSharedPtr& msg){
+    sensing_home_axis_pos_ = create_subscription<xbot_msgs::msg::JointState>
+    (cfg_.sensing_group.joint_states,rclcpp::SensorDataQoS(),
+        [this,robot1](const xbot_msgs::msg::JointState::ConstSharedPtr& msg){
             homePosCallback(msg,robot1);
         },options_home);
-    cleaning_home_axis_pos_= create_subscription<sensor_msgs::msg::JointState>
-    (cfg_.cleaning_group.joint_states,5,
-            [this, robot2](const sensor_msgs::msg::JointState::ConstSharedPtr& msg){
+    cleaning_home_axis_pos_= create_subscription<xbot_msgs::msg::JointState>
+    (cfg_.cleaning_group.joint_states,rclcpp::SensorDataQoS(),
+            [this, robot2](const xbot_msgs::msg::JointState::ConstSharedPtr& msg){
             homePosCallback(msg,robot2);
         },options_home);
-    
+   
    
     system_cobot_mode_info_ = create_subscription<std_msgs::msg::Bool>("/ros2_comm/mod/cobot", 10,
             [this](const std_msgs::msg::Bool::ConstSharedPtr& msg){
@@ -83,7 +75,7 @@ MagicianSubNode::MagicianSubNode(const std::string& node_name, const CobotConfig
 }
 
 
-void MagicianSubNode::homePosCallback(const sensor_msgs::msg::JointState::ConstSharedPtr& msg, const std::string& robot_id)noexcept{
+void MagicianSubNode::homePosCallback(const xbot_msgs::msg::JointState::ConstSharedPtr& msg, const std::string& robot_id)noexcept{
 
     auto home_pos_vec   = robot_home_status_[robot_id].second; 
 
@@ -92,7 +84,7 @@ void MagicianSubNode::homePosCallback(const sensor_msgs::msg::JointState::ConstS
     for(size_t i = 0; i<home_pos_vec.size(); i++)
     {   
             auto target = home_pos_vec[i];       
-            auto current = msg->position[i];
+            auto current = msg->link_position[i];
             
             if(std::fabs(target - current) > JOINT_TOL){
                 
@@ -106,6 +98,27 @@ void MagicianSubNode::homePosCallback(const sensor_msgs::msg::JointState::ConstS
     }else
     {
         RCLCPP_INFO(get_logger(), "%s - Robot NOT home", robot_id.c_str());
+    }
+
+    if (robot_id == cfg_.sensing_group.name) {
+        is_sensing_in_op_pos_ = true;
+        for(size_t i = 0; i < cfg_.sensing_group.target_pos_vec.size(); i++) {
+            if(std::fabs(cfg_.sensing_group.target_pos_vec[i] - msg->link_position[i]) > JOINT_TOL) {
+                is_sensing_in_op_pos_ = false;
+                break;
+            }
+        }
+    }
+    
+
+    else if (robot_id == cfg_.cleaning_group.name) {
+        is_cleaning_in_op_pos_ = true;
+        for(size_t i = 0; i < cfg_.cleaning_group.target_pos_vec.size(); i++) {
+            if(std::fabs(cfg_.cleaning_group.target_pos_vec[i] - msg->link_position[i]) > JOINT_TOL) {
+                is_cleaning_in_op_pos_ = false;
+                break;
+            }
+        }
     }
     
 
@@ -134,10 +147,12 @@ void MagicianSubNode::robotActivationCallback(const std_msgs::msg::Bool::ConstSh
 MagicianClientNode::MagicianClientNode(const std::string& node_name, const CobotConfig& cfg, std::shared_ptr<MagicianSubNode> sub_node) 
 : rclcpp::Node{node_name}, cfg_{cfg}, sub_node_{sub_node}{
 
-    sensing_client_ = this->create_client<std_srvs::srv::SetBool>(cfg_.sensing_group.service_name);
-    cleaning_client_= this->create_client<std_srvs::srv::SetBool>(cfg_.cleaning_group.service_name);
+    sensing_homing_client_ = create_client<std_srvs::srv::SetBool>(cfg_.sensing_group.service_name);
+    cleaning_homing_client_= create_client<std_srvs::srv::SetBool>(cfg_.cleaning_group.service_name);
+    sensing_mock_operation_client_ = create_client<std_srvs::srv::SetBool>("/sr/xbotcore/homing_ergodic/switch");
+    cleaning_mock_operation_client_ = create_client<std_srvs::srv::SetBool>("/cr/xbotcore/homing2/switch");
 
-    while(!sensing_client_->wait_for_service(std::chrono::microseconds(4))){
+    while(!sensing_homing_client_->wait_for_service(std::chrono::microseconds(4))){
         if(!rclcpp::ok()){
             RCLCPP_ERROR(get_logger(),"Client interrupted while waiting for sensing service to appear ");
         }
@@ -164,17 +179,17 @@ BT::NodeStatus MagicianClientNode::HomingCall(){
 
     //Only sensing needs homing
     if(!sensing_at_home && cleaning_at_home){
-        return SendHomingRequest(sensing_client_, sensing_request, timeout, "SENSING");
+        return SendHomingRequest(sensing_homing_client_, sensing_request, timeout, "SENSING");
     } 
 
     //Only cleaning needs homing
     if(sensing_at_home && !cleaning_at_home){
-        return SendHomingRequest(cleaning_client_, cleaning_request, timeout, "CLEANING");
+        return SendHomingRequest(cleaning_homing_client_, cleaning_request, timeout, "CLEANING");
     }
 
     //both need homing
-    auto sensing_future = sensing_client_->async_send_request(sensing_request);
-    auto cleaning_future = cleaning_client_->async_send_request(cleaning_request);
+    auto sensing_future = sensing_homing_client_->async_send_request(sensing_request);
+    auto cleaning_future = cleaning_homing_client_->async_send_request(cleaning_request);
 
     //wait for both
     bool sensing_ready = sensing_future.wait_for(timeout) == std::future_status::ready;
@@ -229,6 +244,8 @@ BT::NodeStatus MagicianClientNode::SendHomingRequest(
 MagicianOpcUA::MagicianOpcUA(const std::string& node_name) : rclcpp::Node{node_name} 
 {
     automatic_mode_set_client_ = create_client<std_srvs::srv::SetBool>("/ros2_comm/mod/full_automatic_mode_set");
+    cobot_mode_set_client_ = create_client<std_srvs::srv::SetBool>("/ros2_comm/mod/cobot_mode_set");
+
 
     sensing_safe_transfer_client_ = create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/safetransfer_set");
     cleaning_safe_transfer_client_= create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/safetransfer_set");

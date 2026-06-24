@@ -11,6 +11,9 @@ CobotConfig ConfigLoader::load_file(const std::string& yaml_path){
     for(const auto& position : root["cobot1"]["home_position"]){
         cfg.sensing_group.home_vec.emplace_back(position.as<double>());
     }
+    for(const auto& position : root["cobot1"]["target_position"]){
+        cfg.sensing_group.target_pos_vec.emplace_back(position.as<double>());
+    }
 
     
     cfg.cleaning_group.name = root["cobot2"]["robot_name"].as<std::string>();
@@ -18,6 +21,10 @@ CobotConfig ConfigLoader::load_file(const std::string& yaml_path){
     cfg.cleaning_group.service_name = root["cobot2"]["cleaning_service"].as<std::string>();
     for(const auto& position : root["cobot2"]["home_position"]){
         cfg.cleaning_group.home_vec.emplace_back(position.as<double>());
+    }
+
+    for(const auto& position : root["cobot2"]["target_position"]){
+        cfg.cleaning_group.target_pos_vec.emplace_back(position.as<double>());
     }
 
     return cfg;

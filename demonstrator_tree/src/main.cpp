@@ -1,10 +1,5 @@
 #include "demonstrator_tree/behavior_node.hpp"
-#include <behaviortree_cpp/tree_node.h>
-#include <rclcpp/executors.hpp>
-#include <rclcpp/executors/multi_threaded_executor.hpp>
-#include <rclcpp/executors/single_threaded_executor.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <thread>
 
 int main(int argc, char **argv){
 
@@ -13,8 +8,8 @@ auto pkg_path = ament_index_cpp::get_package_share_directory("demonstrator_tree"
 auto cfg = ConfigLoader::load_file( pkg_path + "/config/parameters.yaml");
 rclcpp::init(argc,argv);    
 auto subNode = std::make_shared<DemostratorTree::MagicianSubNode>("home_check_node",cfg);
-auto clientNode = std::make_shared<DemostratorTree::MagicianClientNode>("homing_node",cfg,subNode);
 auto clientOpcUa  = std::make_shared<DemostratorTree::MagicianOpcUA>("opcua_safe_transfer_node");
+auto clientNode = std::make_shared<DemostratorTree::MagicianClientNode>("homing_node",cfg,subNode);
 
 rclcpp::executors::MultiThreadedExecutor exe;
 exe.add_node(subNode);
@@ -48,26 +43,37 @@ factory.registerSimpleAction("CallOpcUaHomeBothActive",[&](BT::TreeNode&){return
 factory.registerSimpleAction("WaitOperator",[&](BT::TreeNode&){ return subNode->CheckMode();});
 factory.registerSimpleAction("IsHumanRobotMode",[&](BT::TreeNode&){return subNode->IsCobotMode();});
 factory.registerSimpleAction("IsFullAutomaticMode",[&](BT::TreeNode&){return subNode->IsAutomaticMode();});
-factory.registerSimpleAction("WaitingForCarLocatedCellSensing",[&](BT::TreeNode&){return subNode->CarBodyLocation("sensing_cobot");});
+factory.registerSimpleAction("WaitingForCarLocatedCellSensing",[&](BT::TreeNode&){return subNode->CarBodyLocation(cfg.sensing_group.name);});
 factory.registerSimpleAction("CallOpcUaActiveSensing",[&](BT::TreeNode&){return clientOpcUa->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::sensing_activation>(true);});
-factory.registerSimpleAction("WaitingOpcUaSensingDeactive",[&](BT::TreeNode&){return subNode->DeactivationMode("sensing_cobot");});
+
+
+factory.registerSimpleAction("CallCobotOperationSensing",[&](BT::TreeNode&){return clientNode->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::sensing_operation>(true);});
+
+factory.registerSimpleAction("CallOpcUaDeactiveSensing",[&](BT::TreeNode&){return clientOpcUa->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::sensing_activation>(false);});
+
+factory.registerSimpleAction("WaitingOpcUaSensingDeactive",[&](BT::TreeNode&){return subNode->DeactivationMode(cfg.sensing_group.name);});
 factory.registerSimpleAction("CallOpcUaFinishedSensingActive",[&](BT::TreeNode&){return clientOpcUa->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::sensing_finished>(true);});
 
-factory.registerSimpleAction("WaitingForCarLocatedCellCleaning",[&](BT::TreeNode&){return subNode->CarBodyLocation("cleaning_cobot");});
+factory.registerSimpleAction("WaitingForCarLocatedCellCleaning",[&](BT::TreeNode&){return subNode->CarBodyLocation(cfg.cleaning_group.name);});
 
 
 factory.registerSimpleAction("CallOpcUaHomeSensing",[&](BT::TreeNode&){return clientOpcUa->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::sensing_home>(true);});
 
 factory.registerSimpleAction("CallOpcUaActiveCleaning",[&](BT::TreeNode&){return clientOpcUa->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::cleaning_activation>(true);});
 
-factory.registerSimpleAction("WaitingOpcUaCleaningDeactive",[&](BT::TreeNode&){return subNode->DeactivationMode("cleaning_cobot");});
+
+factory.registerSimpleAction("CallCobotOperationCleaning",[&](BT::TreeNode&){return clientNode->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::cleaning_operation>(true);});
+
+factory.registerSimpleAction("CallOpcUaDeactiveCleaning",[&](BT::TreeNode&){return clientOpcUa->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::cleaning_activation>(false);});
+
+factory.registerSimpleAction("WaitingOpcUaCleaningDeactive",[&](BT::TreeNode&){return subNode->DeactivationMode(cfg.cleaning_group.name);});
 
 factory.registerSimpleAction("CallOpcUaHomeCleaning",[&](BT::TreeNode&){return clientOpcUa->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::cleaning_home>(true);});
 
 factory.registerSimpleAction("CallOpcUaFinishedCleaningActive",[&](BT::TreeNode&){return clientOpcUa->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::cleaning_finished>(true);});
 
 
-factory.registerSimpleAction("CallOpcUaAutomaticModeDeactive",[&](BT::TreeNode&){return clientOpcUa->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::automatic_mod>(false);});
+factory.registerSimpleAction("CallOpcUaCobotModeDeactive",[&](BT::TreeNode&){return clientOpcUa->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::cobot_mod>(false);});
 
 
 factory.registerSimpleAction("CallOpcUaFinishedSensingDeactive",[&](BT::TreeNode&){return clientOpcUa->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::sensing_finished>(false);});
@@ -77,6 +83,13 @@ factory.registerSimpleAction("CallOpcUaFinishedCleaningDeactive",[&](BT::TreeNod
 
 
 factory.registerSimpleAction("CallOpcUaHomeBothDeactive",[&](BT::TreeNode&){return clientOpcUa->ExecuteServiceByName<DemostratorTree::TargetOpcUaClient::both_home>(false);});
+
+factory.registerSimpleAction("WaitSensingOperationPos", 
+    [&](BT::TreeNode&){ return subNode->CheckOperationPos(cfg.sensing_group.name); });
+
+
+factory.registerSimpleAction("WaitCleaningOperationPos", 
+    [&](BT::TreeNode&){ return subNode->CheckOperationPos(cfg.cleaning_group.name); });
 
 auto tree =factory.createTreeFromFile( pkg_path + "/config/bt_tree.xml");
 tree.tickWhileRunning();
