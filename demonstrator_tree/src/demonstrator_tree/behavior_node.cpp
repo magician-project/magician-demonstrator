@@ -102,8 +102,8 @@ void MagicianSubNode::homePosCallback(const xbot_msgs::msg::JointState::ConstSha
 
     if (robot_id == cfg_.sensing_group.name) {
         is_sensing_in_op_pos_ = true;
-        for(size_t i = 0; i < sensing_op_target_vec.size(); i++) {
-            if(std::fabs(sensing_op_target_vec[i] - msg->link_position[i]) > JOINT_TOL) {
+        for(size_t i = 0; i < cfg_.sensing_group.target_pos_vec.size(); i++) {
+            if(std::fabs(cfg_.sensing_group.target_pos_vec[i] - msg->link_position[i]) > JOINT_TOL) {
                 is_sensing_in_op_pos_ = false;
                 break;
             }
@@ -113,8 +113,8 @@ void MagicianSubNode::homePosCallback(const xbot_msgs::msg::JointState::ConstSha
 
     else if (robot_id == cfg_.cleaning_group.name) {
         is_cleaning_in_op_pos_ = true;
-        for(size_t i = 0; i < cleaning_op_target_vec.size(); i++) {
-            if(std::fabs(cleaning_op_target_vec[i] - msg->link_position[i]) > JOINT_TOL) {
+        for(size_t i = 0; i < cfg_.cleaning_group.target_pos_vec.size(); i++) {
+            if(std::fabs(cfg_.cleaning_group.target_pos_vec[i] - msg->link_position[i]) > JOINT_TOL) {
                 is_cleaning_in_op_pos_ = false;
                 break;
             }

@@ -167,28 +167,10 @@ namespace DemostratorTree{
         rclcpp::CallbackGroup::SharedPtr group_home_pos_;
         rclcpp::CallbackGroup::SharedPtr group_sequence_opc_;
 
+
+        //temporary scenerio
     bool is_sensing_in_op_pos_ = false;
     bool is_cleaning_in_op_pos_ = false;
-
-    // Sensing operasyon hedef konumu (Bir önceki adımda girdiğimiz)
-    const std::vector<double> sensing_op_target_vec = {
-        0.002013349672779441,
-       -0.5390744209289551,
-       -1.2323378324508667,
-        1.5754222869873047,
-        1.3890196084976196,
-       -0.0011984225129708648
-    };
-
-    // Yeni: Cleaning operasyon hedef konumu (Şimdi paylaştığın link_position değerleri)
-    const std::vector<double> cleaning_op_target_vec = {
-        1.4543336629867554,
-       -0.40163931250572205,
-        0.8603475093841553,
-        0.0024687503464519978,
-        1.1211961507797241,
-       -3.688288927078247
-    };
 
     };
 

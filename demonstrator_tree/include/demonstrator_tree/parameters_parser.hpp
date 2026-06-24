@@ -11,6 +11,7 @@ struct RobotConfig{
     std::string joint_states;
     std::string service_name;
     std::vector<double> home_vec;
+    std::vector<double> target_pos_vec;
 };
 
 struct CobotConfig
