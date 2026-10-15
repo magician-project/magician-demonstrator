@@ -157,26 +157,20 @@ leftLayout->addWidget(slidersGroup);
   sensingLayout->setSpacing(4);
   btnSensingCarbodyLocatedSt_    = createToggleButton("Carbody Located");
   btnSensingSafeTransferToggle_  = createToggleButton("Robot Home");
-  btnSensingActiveToggle_        = createToggleButton("Sensing Active");
-  btnSensingTouchActiveToggle_   = createToggleButton("Touch Active");
-  btnSensingRunningToggle_       = createToggleButton("Slider Position1");
-  btnSensingFinishedToggle_      = createToggleButton("Slider Position2");
-  btnSensingTouchFinishedToggle_ = createToggleButton("Slider Position2+");
-  btnSensingPos2Toggle_          = createToggleButton("Slider Position3"); 
-  btnSensingPos3Toggle_          = createToggleButton("Slider Position4");
-  btnSensingPos4Toggle_          = createToggleButton("Slider Position5");
-  btnSensingPos5Toggle_          = createToggleButton("Slider Position6");
+  btnSensingInitPosToggle_        = createToggleButton("Initial Position on Running");
+  btnSensingPos1Toggle_       = createToggleButton("Position1 Operation Finished");
+  btnSensingPos2Toggle_          = createToggleButton("Position2 Operation Finished"); 
+  btnSensingPos3Toggle_          = createToggleButton("Position3 Operation Finished");
+  btnSensingPos4Toggle_          = createToggleButton("Position4 Operation Finished");
+  btnSensingPos5Toggle_          = createToggleButton("Position5 Operation Finished");
   sensingLayout->addWidget(btnSensingSafeTransferToggle_,    0, 0);
-  sensingLayout->addWidget(btnSensingFinishedToggle_,        3, 1);
-  sensingLayout->addWidget(btnSensingTouchFinishedToggle_,   3, 0);
-  sensingLayout->addWidget(btnSensingActiveToggle_,          1, 1);
-  sensingLayout->addWidget(btnSensingTouchActiveToggle_,     1, 0); 
   sensingLayout->addWidget(btnSensingCarbodyLocatedSt_,      0, 1);
-  sensingLayout->addWidget(btnSensingRunningToggle_,         2, 0);
-  sensingLayout->addWidget(btnSensingPos2Toggle_,            4, 0);
-  sensingLayout->addWidget(btnSensingPos3Toggle_,            4, 1);
-  sensingLayout->addWidget(btnSensingPos4Toggle_,            5, 0);
-  sensingLayout->addWidget(btnSensingPos5Toggle_,            5, 1);
+  sensingLayout->addWidget(btnSensingInitPosToggle_,         1, 0);
+  sensingLayout->addWidget(btnSensingPos1Toggle_,            1, 1);
+  sensingLayout->addWidget(btnSensingPos2Toggle_,            2, 0);
+  sensingLayout->addWidget(btnSensingPos3Toggle_,            2, 1);
+  sensingLayout->addWidget(btnSensingPos4Toggle_,            3, 0);
+  sensingLayout->addWidget(btnSensingPos5Toggle_,            3, 1); 
   rightLayout->addWidget(sensingGroup);
 
   // Cleaning Robot
@@ -185,22 +179,20 @@ leftLayout->addWidget(slidersGroup);
   cleaningLayout->setSpacing(4);
   btnCleaningCarbodyLocatedSt_   = createToggleButton("Carbody Located");
   btnCleaningSafeTransferToggle_ = createToggleButton("Robot Home");
-  btnCleaningActiveToggle_       = createToggleButton("Cleaning Active");
-  btnCleaningRunningToggle_      = createToggleButton("Slider Position1");
-  btnCleaningFinishedToggle_     = createToggleButton("Slider Position2");
-  btnCleaningPos2Toggle_          = createToggleButton("Slider Position3"); 
-  btnCleaningPos3Toggle_          = createToggleButton("Slider Position4");
-  btnCleaningPos4Toggle_          = createToggleButton("Slider Position5");
-  btnCleaningPos5Toggle_          = createToggleButton("Slider Position6");
+  btnCleaningInitPosToggle_      = createToggleButton("Initial Position on Running");
+  btnCleaningPos1Toggle_      = createToggleButton("Position1 Operation Finished");
+  btnCleaningPos2Toggle_     = createToggleButton("Position2 Operation Finished");
+  btnCleaningPos3Toggle_          = createToggleButton("Position3 Operation Finished"); 
+  btnCleaningPos4Toggle_          = createToggleButton("Position4 Operation Finished");
+  btnCleaningPos5Toggle_          = createToggleButton("Position5 Operation Finished");
   cleaningLayout->addWidget(btnCleaningSafeTransferToggle_,  0, 0);
-  cleaningLayout->addWidget(btnCleaningFinishedToggle_,      2, 1);
-  cleaningLayout->addWidget(btnCleaningActiveToggle_,        1, 0);
   cleaningLayout->addWidget(btnCleaningCarbodyLocatedSt_,    0, 1);
-  cleaningLayout->addWidget(btnCleaningRunningToggle_,       2, 0);
-  cleaningLayout->addWidget(btnCleaningPos2Toggle_,          3, 0); 
-  cleaningLayout->addWidget(btnCleaningPos3Toggle_,          3, 1);
-  cleaningLayout->addWidget(btnCleaningPos4Toggle_,          4, 0);
-  cleaningLayout->addWidget(btnCleaningPos5Toggle_,          4, 1);
+  cleaningLayout->addWidget(btnCleaningInitPosToggle_,          1, 0);
+  cleaningLayout->addWidget(btnCleaningPos1Toggle_,       1, 1);
+  cleaningLayout->addWidget(btnCleaningPos2Toggle_,      2, 0);
+  cleaningLayout->addWidget(btnCleaningPos3Toggle_,          2, 1); 
+  cleaningLayout->addWidget(btnCleaningPos4Toggle_,          3, 0);
+  cleaningLayout->addWidget(btnCleaningPos5Toggle_,          3, 1);
   rightLayout->addWidget(cleaningGroup);
   rightLayout->addStretch();
   contentLayout->addWidget(rightPanel, 6);
@@ -238,53 +230,37 @@ leftLayout->addWidget(slidersGroup);
     call_service(cli_sensing_safetransfer_, checked);
   });
   
-  connect(btnSensingFinishedToggle_, &QPushButton::toggled, [this](bool checked){ 
-    updateToggleButtonStyle(btnSensingFinishedToggle_, checked);
-    call_service(cli_sensing_finished_, checked);
-  });
-  
-  connect(btnSensingTouchFinishedToggle_, &QPushButton::toggled, [this](bool checked){ 
-    updateToggleButtonStyle(btnSensingTouchFinishedToggle_, checked);
-    call_service(cli_sensing_touch_finished_, checked);
-  });
-  
-  connect(btnSensingActiveToggle_, &QPushButton::toggled, [this](bool checked){ 
-    updateToggleButtonStyle(btnSensingActiveToggle_, checked);
-    call_service(cli_sensing_active_, checked);
-  });
-  
-  connect(btnSensingTouchActiveToggle_, &QPushButton::toggled, [this](bool checked){ 
-    updateToggleButtonStyle(btnSensingTouchActiveToggle_, checked);
-    call_service(cli_sensing_touch_active_, checked);
-  });
-    
-  connect(btnSensingRunningToggle_, &QPushButton::toggled, [this](bool checked){ 
-    updateToggleButtonStyle(btnSensingRunningToggle_, checked);
-    call_service(cli_sensing_running_, checked);
+  connect(btnSensingInitPosToggle_, &QPushButton::toggled, [this](bool checked){ 
+    updateToggleButtonStyle(btnSensingInitPosToggle_, checked);
+    call_service(cli_sensing_slider_initial_pos_, checked);
   });
  
-
+  connect(btnSensingPos1Toggle_, &QPushButton::toggled, [this](bool checked){ 
+    updateToggleButtonStyle(btnSensingPos1Toggle_, checked);
+    call_service(cli_sensing_slider_pos1_, checked);
+  });
+   
   connect(btnSensingPos2Toggle_, &QPushButton::toggled, [this](bool checked){ 
     updateToggleButtonStyle(btnSensingPos2Toggle_, checked);
-    call_service(cli_sensing_pos2_st_, checked);
+    call_service(cli_sensing_slider_pos2_, checked);
   });
 
 
   connect(btnSensingPos3Toggle_, &QPushButton::toggled, [this](bool checked){ 
     updateToggleButtonStyle(btnSensingPos3Toggle_, checked);
-    call_service(cli_sensing_pos3_st_, checked);
+    call_service(cli_sensing_slider_pos3_, checked);
   });
 
 
   connect(btnSensingPos4Toggle_, &QPushButton::toggled, [this](bool checked){ 
     updateToggleButtonStyle(btnSensingPos4Toggle_, checked);
-    call_service(cli_sensing_pos4_st_, checked);
+    call_service(cli_sensing_slider_pos4_, checked);
   });
 
 
   connect(btnSensingPos5Toggle_, &QPushButton::toggled, [this](bool checked){ 
     updateToggleButtonStyle(btnSensingPos5Toggle_, checked);
-    call_service(cli_sensing_pos5_st_, checked);
+    call_service(cli_sensing_slider_pos5_, checked);
   });
 
 /* CLEANING  */
@@ -297,43 +273,37 @@ leftLayout->addWidget(slidersGroup);
     updateToggleButtonStyle(btnCleaningSafeTransferToggle_, checked);
     call_service(cli_cleaning_safetransfer_, checked);
   });
-  
-  connect(btnCleaningFinishedToggle_, &QPushButton::toggled, [this](bool checked){ 
-    updateToggleButtonStyle(btnCleaningFinishedToggle_, checked);
-    call_service(cli_cleaning_finished_, checked);
-  });
-  
-  connect(btnCleaningActiveToggle_, &QPushButton::toggled, [this](bool checked){ 
-    updateToggleButtonStyle(btnCleaningActiveToggle_, checked);
-    call_service(cli_cleaning_active_, checked);
-  });
    
-  connect(btnCleaningRunningToggle_, &QPushButton::toggled, [this](bool checked){ 
-    updateToggleButtonStyle(btnCleaningRunningToggle_, checked);
-    call_service(cli_cleaning_running_, checked);
+  connect(btnCleaningInitPosToggle_, &QPushButton::toggled, [this](bool checked){ 
+    updateToggleButtonStyle(btnCleaningInitPosToggle_, checked);
+    call_service(cli_cleaning_slider_initial_pos_, checked);
   });
 
+  connect(btnCleaningPos1Toggle_, &QPushButton::toggled, [this](bool checked){ 
+          updateToggleButtonStyle(btnCleaningPos1Toggle_, checked);
+          call_service(cli_cleaning_slider_pos1_, checked);
+          });
 
   connect(btnCleaningPos2Toggle_, &QPushButton::toggled, [this](bool checked){ 
     updateToggleButtonStyle(btnCleaningPos2Toggle_, checked);
-    call_service(cli_cleaning_pos2_st_, checked);
+    call_service(cli_cleaning_slider_pos2_, checked);
   });
 
 
   connect(btnCleaningPos3Toggle_, &QPushButton::toggled, [this](bool checked){ 
     updateToggleButtonStyle(btnCleaningPos3Toggle_, checked);
-    call_service(cli_cleaning_pos3_st_, checked);
+    call_service(cli_cleaning_slider_pos3_, checked);
   });
 
 
   connect(btnCleaningPos4Toggle_, &QPushButton::toggled, [this](bool checked){ 
     updateToggleButtonStyle(btnCleaningPos4Toggle_, checked);
-    call_service(cli_cleaning_pos4_st_, checked);
+    call_service(cli_cleaning_slider_pos4_, checked);
   });
 
   connect(btnCleaningPos5Toggle_, &QPushButton::toggled, [this](bool checked){ 
     updateToggleButtonStyle(btnCleaningPos5Toggle_, checked);
-    call_service(cli_cleaning_pos5_st_, checked);
+    call_service(cli_cleaning_slider_pos5_, checked);
   });
 
 
@@ -380,16 +350,13 @@ void MainWindow::setup_ros() {
 
   cli_sensing_carbody_located_st_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/carbody_located_set");
   cli_sensing_safetransfer_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/safetransfer_set");
-  cli_sensing_active_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/active_set");
-  cli_sensing_touch_active_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/touch_active_set");
-  cli_sensing_running_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/go_slider_pos1");
+  cli_sensing_slider_initial_pos_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/initial_pos_ok");
 
-  cli_sensing_finished_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/go_slider_pos2");
-  cli_sensing_touch_finished_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/t_go_slider_pos2");
- cli_sensing_pos2_st_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/go_slider_pos3"); 
- cli_sensing_pos3_st_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/go_slider_pos4");
- cli_sensing_pos4_st_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/go_slider_pos5");
- cli_sensing_pos5_st_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/go_slider_pos6");
+  cli_sensing_slider_pos1_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/pos1_ok");
+ cli_sensing_slider_pos2_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/pos2_ok"); 
+ cli_sensing_slider_pos3_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/pos3_ok");
+ cli_sensing_slider_pos4_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/pos4_ok");
+ cli_sensing_slider_pos5_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/sensing/pos5_ok");
 
 
 
@@ -398,13 +365,12 @@ void MainWindow::setup_ros() {
 
   cli_cleaning_carbody_located_st_= node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/carbody_located_set");
   cli_cleaning_safetransfer_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/safetransfer_set");
-  cli_cleaning_active_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/cleaning_active_set");
-  cli_cleaning_running_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/go_slider_pos1");
-  cli_cleaning_finished_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/go_slider_pos2");
-  cli_cleaning_pos2_st_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/go_slider_pos3");
-  cli_cleaning_pos3_st_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/go_slider_pos4");
-  cli_cleaning_pos4_st_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/go_slider_pos5");
-  cli_cleaning_pos5_st_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/go_slider_pos6");
+  cli_cleaning_slider_initial_pos_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/initial_pos_ok");
+  cli_cleaning_slider_pos1_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/pos1_ok");
+  cli_cleaning_slider_pos2_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/pos2_ok");
+  cli_cleaning_slider_pos3_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/pos3_ok");
+  cli_cleaning_slider_pos4_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/pos4_ok");
+  cli_cleaning_slider_pos5_ = node_->create_client<std_srvs::srv::SetBool>("/ros2_comm/cleaning/pos5_ok");
   
   sub_cobot_mode_ = node_->create_subscription<std_msgs::msg::Bool>(
     "/ros2_comm/mod/cobot", common_qos_.reliable(),
@@ -448,62 +414,29 @@ void MainWindow::setup_ros() {
       }, Qt::QueuedConnection);
     });
   
-  sub_sensing_finished_ = node_->create_subscription<std_msgs::msg::Bool>(
-    "/ros2_comm/sensing/finished", sensing_and_cleaning_qos_.best_effort(),
-    [this](const std_msgs::msg::Bool::SharedPtr msg){
-      QMetaObject::invokeMethod(this, [this, state=msg->data](){
-        btnSensingFinishedToggle_->blockSignals(true);
-        btnSensingFinishedToggle_->setChecked(state);
-        updateToggleButtonStyle(btnSensingFinishedToggle_, state);
-        btnSensingFinishedToggle_->blockSignals(false);
-      }, Qt::QueuedConnection);
-    });
   
-  sub_sensing_touch_finished_ = node_->create_subscription<std_msgs::msg::Bool>(
-    "/ros2_comm/sensing/touch_finished", sensing_and_cleaning_qos_.best_effort(),
-    [this](const std_msgs::msg::Bool::SharedPtr msg){
-      QMetaObject::invokeMethod(this, [this, state=msg->data](){
-        btnSensingTouchFinishedToggle_->blockSignals(true);
-        btnSensingTouchFinishedToggle_->setChecked(state);
-        updateToggleButtonStyle(btnSensingTouchFinishedToggle_, state);
-        btnSensingTouchFinishedToggle_->blockSignals(false);
-      }, Qt::QueuedConnection);
-    });
-  
-  sub_sensing_active_ = node_->create_subscription<std_msgs::msg::Bool>(
-    "/ros2_comm/sensing/sensing_active", sensing_and_cleaning_qos_.best_effort(),
-    [this](const std_msgs::msg::Bool::SharedPtr msg){
-      QMetaObject::invokeMethod(this, [this, state=msg->data](){
-        btnSensingActiveToggle_->blockSignals(true);
-        btnSensingActiveToggle_->setChecked(state);
-        updateToggleButtonStyle(btnSensingActiveToggle_, state);
-        btnSensingActiveToggle_->blockSignals(false);
-      }, Qt::QueuedConnection);
-    });
-  
-  sub_sensing_touch_active_ = node_->create_subscription<std_msgs::msg::Bool>(
-    "/ros2_comm/sensing/touch_active", sensing_and_cleaning_qos_.best_effort(),
-    [this](const std_msgs::msg::Bool::SharedPtr msg){
-      QMetaObject::invokeMethod(this, [this, state=msg->data](){
-        btnSensingTouchActiveToggle_->blockSignals(true);
-        btnSensingTouchActiveToggle_->setChecked(state);
-        updateToggleButtonStyle(btnSensingTouchActiveToggle_, state);
-        btnSensingTouchActiveToggle_->blockSignals(false);
-      }, Qt::QueuedConnection);
-    });
-  
-  
-  sub_sensing_running_ = node_->create_subscription<std_msgs::msg::Bool>(
+   
+  sub_sensing_init_pos_st_ = node_->create_subscription<std_msgs::msg::Bool>(
     "/ros2_comm/sensing/pos1_is_ready",sensing_and_cleaning_qos_.best_effort(),
     [this](const std_msgs::msg::Bool::SharedPtr msg){
       QMetaObject::invokeMethod(this, [this, state=msg->data](){
-        btnSensingRunningToggle_->blockSignals(true);
-        btnSensingRunningToggle_->setChecked(state);
-        updateToggleButtonStyle(btnSensingRunningToggle_, state);
-        btnSensingRunningToggle_->blockSignals(false);
+        btnSensingInitPosToggle_->blockSignals(true);
+        btnSensingInitPosToggle_->setChecked(state);
+        updateToggleButtonStyle(btnSensingInitPosToggle_, state);
+        btnSensingInitPosToggle_->blockSignals(false);
       }, Qt::QueuedConnection);
     });
 
+  sub_sensing_pos1_st_ = node_->create_subscription<std_msgs::msg::Bool>(
+          "/ros2_comm/sensing/pos1_status", sensing_and_cleaning_qos_.best_effort(),
+          [this](const std_msgs::msg::Bool::SharedPtr msg){
+          QMetaObject::invokeMethod(this, [this, state=msg->data](){
+                  btnSensingPos1Toggle_->blockSignals(true);
+                  btnSensingPos1Toggle_->setChecked(state);
+                  updateToggleButtonStyle(btnSensingPos1Toggle_, state);
+                  btnSensingPos1Toggle_->blockSignals(false);
+                  }, Qt::QueuedConnection);
+          });
     
     sub_sensing_pos2_st_ = node_->create_subscription<std_msgs::msg::Bool>(
     "/ros2_comm/sensing/pos2_status",sensing_and_cleaning_qos_.best_effort(),
@@ -614,39 +547,28 @@ sub_cleaning_slider_ =
       }, Qt::QueuedConnection);
     });
   
-  sub_cleaning_finished_ = node_->create_subscription<std_msgs::msg::Bool>(
-    "/ros2_comm/cleaning/finished", sensing_and_cleaning_qos_.best_effort(),
+  sub_cleaning_init_pos_st_ = node_->create_subscription<std_msgs::msg::Bool>(
+          "/ros2_comm/cleaning/pos1_is_ready", sensing_and_cleaning_qos_.best_effort(),
+          [this](const std_msgs::msg::Bool::SharedPtr msg){
+          QMetaObject::invokeMethod(this, [this, state=msg->data](){
+                  btnCleaningInitPosToggle_->blockSignals(true);
+                  btnCleaningInitPosToggle_->setChecked(state);
+                  updateToggleButtonStyle(btnCleaningInitPosToggle_, state);
+                  btnCleaningInitPosToggle_->blockSignals(false);
+                  }, Qt::QueuedConnection);
+          });
+  sub_cleaning_pos1_st_ = node_->create_subscription<std_msgs::msg::Bool>(
+    "/ros2_comm/cleaning/pos1_status", sensing_and_cleaning_qos_.best_effort(),
     [this](const std_msgs::msg::Bool::SharedPtr msg){
       QMetaObject::invokeMethod(this, [this, state=msg->data](){
-        btnCleaningFinishedToggle_->blockSignals(true);
-        btnCleaningFinishedToggle_->setChecked(state);
-        updateToggleButtonStyle(btnCleaningFinishedToggle_, state);
-        btnCleaningFinishedToggle_->blockSignals(false);
+        btnCleaningPos1Toggle_->blockSignals(true);
+        btnCleaningPos1Toggle_->setChecked(state);
+        updateToggleButtonStyle(btnCleaningPos1Toggle_, state);
+        btnCleaningPos1Toggle_->blockSignals(false);
       }, Qt::QueuedConnection);
     });
   
-  sub_cleaning_active_ = node_->create_subscription<std_msgs::msg::Bool>(
-    "/ros2_comm/cleaning/cleaning_active", sensing_and_cleaning_qos_.best_effort(),
-    [this](const std_msgs::msg::Bool::SharedPtr msg){
-      QMetaObject::invokeMethod(this, [this, state=msg->data](){
-        btnCleaningActiveToggle_->blockSignals(true);
-        btnCleaningActiveToggle_->setChecked(state);
-        updateToggleButtonStyle(btnCleaningActiveToggle_, state);
-        btnCleaningActiveToggle_->blockSignals(false);
-      }, Qt::QueuedConnection);
-    });
   
-  
-  sub_cleaning_running_ = node_->create_subscription<std_msgs::msg::Bool>(
-    "/ros2_comm/cleaning/running", sensing_and_cleaning_qos_.best_effort(),
-    [this](const std_msgs::msg::Bool::SharedPtr msg){
-      QMetaObject::invokeMethod(this, [this, state=msg->data](){
-        btnCleaningRunningToggle_->blockSignals(true);
-        btnCleaningRunningToggle_->setChecked(state);
-        updateToggleButtonStyle(btnCleaningRunningToggle_, state);
-        btnCleaningRunningToggle_->blockSignals(false);
-      }, Qt::QueuedConnection);
-    });
 
     sub_cleaning_pos2_st_ = node_->create_subscription<std_msgs::msg::Bool>(
     "/ros2_comm/cleaning/pos2_status", sensing_and_cleaning_qos_.best_effort(),
